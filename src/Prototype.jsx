@@ -141,6 +141,10 @@ function ScrAccount({ go }) {
 
 function ScrPairing({ go }) {
   const [connected, setConnected] = React.useState(false);
+  const [attempts, setAttempts] = React.useState(0);
+  const [help, setHelp] = React.useState(false);
+  const struggling = attempts >= 2 && !connected;
+  const retry = () => { setAttempts((a) => a + 1); toast(attempts + 1 >= 2 ? '반지를 찾지 못했어요' : '주변 기기를 다시 검색 중이에요'); };
   return (
     <>
       <StatusBar /><Dot n={1} total={4} />
@@ -160,15 +164,49 @@ function ScrPairing({ go }) {
             <Button size="sm" variant={connected ? 'secondary' : 'primary'} onClick={() => setConnected(true)}>{connected ? '연결됨' : '연결하기'}</Button>
           </div>
         </Card>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginTop: 24 }}>
+        {struggling ? (
+          <Card padding={'14px 16px'} style={{ background: 'var(--color-danger-weak)' }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <Icon name="triangle-alert" size={18} color="var(--color-danger)" style={{ marginTop: 1 }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ font: '600 14px/20px var(--font-sans)', color: 'var(--color-danger)' }}>반지 연결이 계속 안 되나요?</div>
+                <div style={{ font: 'var(--text-caption)', color: 'var(--text-body)', marginTop: 2 }}>반지를 충전기에 5초간 올린 뒤 다시 시도하거나, 연구진에게 연락해 주세요.</div>
+                <Button size="sm" variant="secondary" style={{ marginTop: 10 }} onClick={() => setHelp(true)}><Icon name="headphones" size={13} />연구진에게 연락</Button>
+              </div>
+            </div>
+          </Card>
+        ) : null}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginTop: struggling ? 8 : 24 }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: 'var(--text-caption)', color: 'var(--text-weak)' }}>
             <Icon name="loader" size={14} color="var(--text-weak)" />주변 기기를 계속 찾고 있어요
           </span>
-          <Button variant="ghost" onClick={() => toast('주변 기기를 다시 검색 중이에요')}>다시 검색</Button>
+          <Button variant="ghost" onClick={retry}>다시 검색</Button>
         </div>
       </Body>
-      <CTA label="다음" disabled={!connected} onClick={() => go('permissions')} sub={connected ? null : '페어링에 문제가 있나요?'} />
+      <CTA label="다음" disabled={!connected} onClick={() => go('permissions')}
+        sub={connected ? null : <span onClick={() => setHelp(true)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>페어링에 문제가 있나요?</span>} />
+      {help ? <ContactDialog title="반지 연결이 계속 안 되나요?" body={'연구진이 원격으로 도와드릴 수 있어요.\n아래 채널로 연락해 주세요.'} onClose={() => setHelp(false)} /> : null}
     </>
+  );
+}
+
+/* 연구진 연락 다이얼로그 (페어링 실패 · 문의 공용) */
+function ContactDialog({ title, body, onClose }) {
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'rgba(25,31,40,.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 16, zIndex: 40 }}>
+      <div style={{ background: '#fff', borderRadius: 24, padding: '24px 20px 16px', width: '100%', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ font: 'var(--text-title)', letterSpacing: 'var(--tracking-tight)' }}>{title}</div>
+        <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)', whiteSpace: 'pre-line' }}>{body}</div>
+        <Card padding={'6px 16px'} style={{ background: 'var(--surface-sunken)', marginTop: 10 }}>
+          <ListRow onClick={() => toast('전화 연결 — 02-2123-0000 (목업)')} left={<Icon name="phone" size={18} color="var(--color-primary)" />} title="전화 연결" subtitle="02-2123-0000 · 평일 09–18시" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+          <div style={{ height: 1, background: 'var(--divider)' }} />
+          <ListRow onClick={() => toast('카카오 채널 열기 (목업)')} left={<Icon name="message-circle" size={18} color="var(--color-primary)" />} title="카카오톡 채널 문의" subtitle="위즈퍼링 연구팀" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+          <div style={{ height: 1, background: 'var(--divider)' }} />
+          <ListRow onClick={() => toast('메일 앱 열기 — wizperring@yonsei.ac.kr (목업)')} left={<Icon name="mail" size={18} color="var(--color-primary)" />} title="이메일 문의" subtitle="wizperring@yonsei.ac.kr" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+        </Card>
+        <Button variant="ghost" size="lg" onClick={onClose} style={{ width: '100%', color: 'var(--text-sub)', marginTop: 4 }}>닫기</Button>
+      </div>
+    </div>
   );
 }
 
@@ -298,7 +336,7 @@ const EMA = [
   { time: '22:00', icon: 'moon' }
 ];
 
-function HomeTab({ done, voiceDone, onStartSurvey, onStartVoice, goRewards }) {
+function HomeTab({ done, voiceDone, onStartSurvey, onStartVoice, goRewards, onBell }) {
   const nowIdx = 1;
   const doneCount = Object.values(done).filter(Boolean).length;
   const today = doneCount * 250 + (voiceDone ? 500 : 0);
@@ -316,7 +354,10 @@ function HomeTab({ done, voiceDone, onStartSurvey, onStartVoice, goRewards }) {
           <div style={{ font: 'var(--text-title)', letterSpacing: 'var(--tracking-tight)' }}>안녕하세요, WPR-135님</div>
           <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)', marginTop: 2 }}>오늘도 소중한 참여 부탁드려요</div>
         </div>
-        <button onClick={() => toast('알림 3건 (목업)')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, marginTop: 4 }}><Icon name="bell" size={22} color="var(--text-sub)" /></button>
+        <button onClick={onBell} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, marginTop: 4, position: 'relative' }}>
+          <Icon name="bell" size={22} color="var(--text-sub)" />
+          <span style={{ position: 'absolute', top: -2, right: -2, minWidth: 15, height: 15, borderRadius: 8, background: 'var(--color-danger)', color: '#fff', font: '600 10px/15px var(--font-sans)', textAlign: 'center', padding: '0 3px' }}>3</span>
+        </button>
       </div>
       <Card padding={20}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{cap('오늘 적립액')}<Icon name="info" size={13} color="var(--text-weak)" /></div>
@@ -418,7 +459,7 @@ function RewardsTab({ today }) {
   );
 }
 
-function DeviceTab() {
+function DeviceTab({ onOpen }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 20px 24px' }}>
       <div style={{ font: 'var(--text-title)', letterSpacing: 'var(--tracking-tight)', padding: '12px 0 4px' }}>기기 연결</div>
@@ -444,11 +485,13 @@ function DeviceTab() {
         </div>
       </Card>
       <Button variant="secondary" size="lg" style={{ width: '100%' }} onClick={() => toast('WIZPR RING 재연결을 시도해요')}>다시 연결하기</Button>
+      <Button variant="ghost" size="md" style={{ width: '100%' }} onClick={() => onOpen && onOpen('contact')}><Icon name="headphones" size={15} />연결이 안 되나요? 연구진에게 연락</Button>
     </div>
   );
 }
 
-function SettingsTab({ onWithdraw }) {
+function SettingsTab({ onWithdraw, onOpen }) {
+  const pageKey = { '연구 설명문 보기': 'consent', '권한 상태 확인': 'perms', '알림 설정': 'notifSettings', '설문 시간': 'surveyTime' };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 20px 24px' }}>
       <div style={{ font: 'var(--text-title)', letterSpacing: 'var(--tracking-tight)', padding: '12px 0 4px' }}>설정</div>
@@ -466,7 +509,7 @@ function SettingsTab({ onWithdraw }) {
           <React.Fragment key={t}>
             {i > 0 ? <div style={{ height: 1, background: 'var(--divider)' }} /> : null}
             <ListRow
-              onClick={() => toast(t === '설문 시간' ? '설문 시간은 연구 시작 후 변경할 수 없어요' : t + ' (목업)')}
+              onClick={() => onOpen(pageKey[t])}
               left={<Icon name={ic} size={20} color="var(--text-weak)" />}
               title={t}
               right={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -478,7 +521,7 @@ function SettingsTab({ onWithdraw }) {
         ))}
       </Card>
       <Card padding={'6px 20px'}>
-        <ListRow onClick={() => toast('연구팀 문의 채널 (목업)')} left={<Icon name="headphones" size={20} color="var(--text-weak)" />} title="연구팀에 문의하기" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+        <ListRow onClick={() => onOpen('contact')} left={<Icon name="headphones" size={20} color="var(--text-weak)" />} title="연구팀에 문의하기" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
         <div style={{ height: 1, background: 'var(--divider)' }} />
         <ListRow onClick={onWithdraw} left={<Icon name="log-out" size={20} color="var(--color-danger)" />} title={<span style={{ color: 'var(--color-danger)' }}>연구 참여 철회</span>} />
       </Card>
@@ -487,19 +530,191 @@ function SettingsTab({ onWithdraw }) {
   );
 }
 
+/* ────────── 설정/알림 세부 페이지 ────────── */
+function Toggle({ on, onClick }) {
+  return (
+    <span onClick={onClick} style={{ width: 44, height: 26, borderRadius: 13, cursor: 'pointer', background: on ? 'var(--color-primary)' : 'var(--wz-gray-200)', position: 'relative', flexShrink: 0, transition: 'background .15s' }}>
+      <span style={{ position: 'absolute', top: 3, left: on ? 21 : 3, width: 20, height: 20, borderRadius: 10, background: '#fff', transition: 'left .15s' }} />
+    </span>
+  );
+}
+function PageHead({ title, onBack }) {
+  return <NavHeader title={title} onBack={onBack} />;
+}
+
+function NotificationsPage() {
+  const items = [
+    { ic: 'clock', tone: 'var(--color-primary)', title: '14:00 설문이 열렸어요', desc: '60분 안에 참여하면 250원이 적립돼요', time: '방금' },
+    { ic: 'gift', tone: 'var(--reward-coin)', title: '어제 모든 참여를 완료했어요', desc: '보너스 1,000원이 적립됐어요', time: '어제' },
+    { ic: 'triangle-alert', tone: 'var(--color-danger)', title: '센서 수집이 원활하지 않았어요', desc: '배터리 설정을 확인해 주세요', time: '어제' },
+    { ic: 'circle-dot', tone: 'var(--color-success)', title: 'WIZPR RING이 다시 연결됐어요', desc: '데이터 동기화를 재개했어요', time: '2일 전' },
+    { ic: 'bell', tone: 'var(--text-sub)', title: '연구 절반을 지났어요', desc: '남은 기간도 참여 부탁드려요', time: '3일 전' },
+  ];
+  return (
+    <Body gap={0} pad="4px 20px 20px">
+      {items.map((n, i) => (
+        <React.Fragment key={i}>
+          {i > 0 ? <div style={{ height: 1, background: 'var(--divider)' }} /> : null}
+          <div style={{ display: 'flex', gap: 12, padding: '14px 0', alignItems: 'flex-start' }}>
+            <span style={{ width: 36, height: 36, borderRadius: 18, background: 'var(--surface-sunken)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon name={n.ic} size={18} color={n.tone} />
+            </span>
+            <div style={{ flex: 1 }}>
+              <div style={{ font: 'var(--text-body1)' }}>{n.title}</div>
+              <div style={{ font: 'var(--text-caption)', color: 'var(--text-sub)', marginTop: 2 }}>{n.desc}</div>
+            </div>
+            <span style={{ font: 'var(--text-micro)', color: 'var(--text-weak)', flexShrink: 0 }}>{n.time}</span>
+          </div>
+        </React.Fragment>
+      ))}
+    </Body>
+  );
+}
+
+function ConsentPage() {
+  const secs = [
+    ['연구 목적', '이 연구는 사회적 고립과 정서 상태를 일상 속에서 측정하기 위한 디지털 표현형(DP) 연구입니다. 하루 4회 짧은 자기보고 설문과 1회 음성 발화 과제, 그리고 반지형 기기·스마트폰 센서를 통해 데이터를 수집합니다.'],
+    ['수집 항목', '자기보고 설문 응답, 음성 발화(기기 내 계산값), 신체활동·화면 사용·앱 사용·위치 반경 등 센서 지표. 위치 좌표 원본이나 통화 내용 원문은 서버로 전송되지 않습니다.'],
+    ['참여 기간·보상', '약 4주간 진행되며, 설문 1회 250원·음성 과제 1회 500원, 당일 전체 완료 시 보너스 1,000원이 적립됩니다. 보상은 연구 종료 후 일괄 지급됩니다.'],
+    ['자발적 참여·철회', '참여는 자발적이며 언제든 불이익 없이 철회할 수 있습니다. 철회 시 이후 데이터 수집은 즉시 중단됩니다.'],
+    ['개인정보 보호', '모든 데이터는 연구 ID로 익명화되어 저장되며, IRB 승인 범위 내에서만 사용됩니다.'],
+  ];
+  return (
+    <Body gap={16} pad="8px 20px 24px">
+      <div style={{ font: 'var(--text-title)', letterSpacing: 'var(--tracking-tight)' }}>위즈퍼링 연구 설명문</div>
+      {secs.map(([h, b]) => (
+        <div key={h}>
+          <div style={{ font: 'var(--text-heading)', marginBottom: 4 }}>{h}</div>
+          <div style={{ font: 'var(--text-body2)', color: 'var(--text-body)' }}>{b}</div>
+        </div>
+      ))}
+      <div style={{ font: 'var(--text-micro)', color: 'var(--text-weak)' }}>IRB 승인번호 2026-XX-XXX · 연세대학교 생명윤리위원회</div>
+    </Body>
+  );
+}
+
+function PermsPage() {
+  const [battery, setBattery] = React.useState(false);
+  return (
+    <Body gap={12} pad="8px 20px 24px">
+      <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)' }}>권한이 꺼져 있는 동안의 기록은 다시 수집할 수 없어요</div>
+      <Card padding={'6px 20px'}>
+        <PermRow icon="bell" name="알림" desc="설문 시간을 알려드려요" ok />
+        <div style={{ height: 1, background: 'var(--divider)' }} />
+        <PermRow icon="map-pin" name="위치" desc="외출 반경 · 이동 거리만 계산해요" ok />
+        <div style={{ height: 1, background: 'var(--divider)' }} />
+        <PermRow icon="footprints" name="신체활동" desc="걸음 수와 활동 시간을 수집해요" ok />
+        <div style={{ height: 1, background: 'var(--divider)' }} />
+        <PermRow icon="bluetooth" name="Bluetooth" desc="반지와 연결을 유지해요" ok />
+        <div style={{ height: 1, background: 'var(--divider)' }} />
+        <PermRow icon="battery-charging" name="배터리 사용 제한 해제" desc="백그라운드 수집이 끊기지 않아요" ok={battery} onFix={() => { setBattery(true); toast('배터리 사용 제한을 해제했어요'); }} />
+      </Card>
+      {!battery ? <div style={{ font: 'var(--text-micro)', color: 'var(--color-danger)', padding: '0 4px' }}>1개 항목이 꺼져 있어요 — 허용하면 수집이 안정적이에요</div> : <div style={{ font: 'var(--text-micro)', color: 'var(--color-success)', padding: '0 4px' }}>모든 권한이 허용됐어요</div>}
+    </Body>
+  );
+}
+
+function NotifSettingsPage() {
+  const [s, setS] = React.useState({ ema: true, remind: true, bonus: true, notice: true, sensor: true });
+  const rows = [
+    ['ema', '설문 시간 알림', '각 회차 시작 시 알려드려요'],
+    ['remind', '마감 전 리마인더', '응답 시간 30분 전 한 번 더'],
+    ['sensor', '센서 이상 안내', '수집이 끊기면 조치 방법을 안내해요'],
+    ['bonus', '보상·보너스 알림', '적립 소식을 알려드려요'],
+    ['notice', '연구 공지', '연구팀의 안내 사항'],
+  ];
+  return (
+    <Body gap={12} pad="8px 20px 24px">
+      <Card padding={'6px 20px'}>
+        {rows.map(([k, t, d], i) => (
+          <React.Fragment key={k}>
+            {i > 0 ? <div style={{ height: 1, background: 'var(--divider)' }} /> : null}
+            <ListRow left={null} title={t} subtitle={d} right={<Toggle on={s[k]} onClick={() => { setS((x) => ({ ...x, [k]: !x[k] })); toast(t + ' ' + (s[k] ? '끔' : '켬')); }} />} />
+          </React.Fragment>
+        ))}
+      </Card>
+      <div style={{ font: 'var(--text-micro)', color: 'var(--text-weak)', padding: '0 4px' }}>설문 시간 알림을 끄면 회차 참여를 놓칠 수 있어요.</div>
+    </Body>
+  );
+}
+
+function SurveyTimePage() {
+  const rounds = [['1회차', '10:00', 'sun', '직접 선택'], ['2회차', '14:00', 'sun-medium', '자동'], ['3회차', '18:00', 'sunset', '자동'], ['4회차', '22:00', 'moon', '자동']];
+  return (
+    <Body gap={12} pad="8px 20px 24px">
+      <Card padding={'16px 20px'} style={{ background: 'var(--color-primary-tint)' }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <Icon name="lock" size={16} color="var(--color-primary)" style={{ marginTop: 2 }} />
+          <span style={{ font: 'var(--text-caption)', color: 'var(--text-body)' }}>온보딩에서 설정한 시간으로 고정돼 있어요. 연구 중에는 변경할 수 없어요.</span>
+        </div>
+      </Card>
+      <Card padding={'8px 20px'}>
+        {rounds.map(([n, t, ic, tag], i) => (
+          <React.Fragment key={n}>
+            {i > 0 ? <div style={{ height: 1, background: 'var(--divider)' }} /> : null}
+            <ListRow left={<Icon name={ic} size={20} color={i === 0 ? 'var(--color-primary)' : 'var(--text-weak)'} />} title={<span style={{ fontVariantNumeric: 'tabular-nums' }}>{n + ' · ' + t}</span>} right={<span style={{ font: 'var(--text-caption)', color: 'var(--text-weak)' }}>{tag}</span>} />
+          </React.Fragment>
+        ))}
+      </Card>
+      <div style={{ font: 'var(--text-micro)', color: 'var(--text-weak)', padding: '0 4px' }}>각 회차는 알림 후 60분 동안 참여할 수 있어요.</div>
+    </Body>
+  );
+}
+
+function ContactPage() {
+  return (
+    <Body gap={12} pad="8px 20px 24px">
+      <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)' }}>연구 참여 중 궁금한 점이나 문제가 있으면 연락해 주세요. 평일 09–18시에 응답해요.</div>
+      <Card padding={'6px 20px'}>
+        <ListRow onClick={() => toast('전화 연결 — 02-2123-0000 (목업)')} left={<Icon name="phone" size={20} color="var(--color-primary)" />} title="전화 연결" subtitle="02-2123-0000" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+        <div style={{ height: 1, background: 'var(--divider)' }} />
+        <ListRow onClick={() => toast('카카오 채널 열기 (목업)')} left={<Icon name="message-circle" size={20} color="var(--color-primary)" />} title="카카오톡 채널 문의" subtitle="위즈퍼링 연구팀" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+        <div style={{ height: 1, background: 'var(--divider)' }} />
+        <ListRow onClick={() => toast('메일 앱 열기 — wizperring@yonsei.ac.kr (목업)')} left={<Icon name="mail" size={20} color="var(--color-primary)" />} title="이메일 문의" subtitle="wizperring@yonsei.ac.kr" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+      </Card>
+      <Card padding={'16px 20px'} style={{ background: 'var(--surface-sunken)' }}>
+        <div style={{ font: 'var(--text-caption)', color: 'var(--text-sub)' }}>자주 묻는 질문</div>
+        <div style={{ font: 'var(--text-body2)', color: 'var(--text-body)', marginTop: 6 }}>· 반지가 연결되지 않아요<br />· 설문 알림이 오지 않아요<br />· 보상은 언제 지급되나요?</div>
+      </Card>
+    </Body>
+  );
+}
+
+const SUBPAGES = {
+  notifications: ['알림', NotificationsPage],
+  consent: ['연구 설명문', ConsentPage],
+  perms: ['권한 상태', PermsPage],
+  notifSettings: ['알림 설정', NotifSettingsPage],
+  surveyTime: ['설문 시간', SurveyTimePage],
+  contact: ['연구팀 문의', ContactPage],
+};
+function SubPage({ page, onBack }) {
+  const [title, Comp] = SUBPAGES[page] || ['', () => null];
+  return (
+    <>
+      <StatusBar />
+      <PageHead title={title} onBack={onBack} />
+      <Comp />
+    </>
+  );
+}
+
 function MainApp({ done, voiceDone, onStartSurvey, onStartVoice, onWithdraw }) {
   const [tab, setTab] = React.useState(0);
   const doneCount = Object.values(done).filter(Boolean).length;
   const today = doneCount * 250 + (voiceDone ? 500 : 0);
   const [withdraw, setWithdraw] = React.useState(false);
+  const [page, setPage] = React.useState(null);
+  const open = (p) => setPage(p);
+  if (page) return <SubPage page={page} onBack={() => setPage(null)} />;
   return (
     <>
       <StatusBar />
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        {tab === 0 ? <HomeTab done={done} voiceDone={voiceDone} onStartSurvey={onStartSurvey} onStartVoice={onStartVoice} goRewards={() => setTab(1)} />
+        {tab === 0 ? <HomeTab done={done} voiceDone={voiceDone} onStartSurvey={onStartSurvey} onStartVoice={onStartVoice} goRewards={() => setTab(1)} onBell={() => open('notifications')} />
           : tab === 1 ? <RewardsTab today={today} />
-          : tab === 2 ? <DeviceTab />
-          : <SettingsTab onWithdraw={() => setWithdraw(true)} />}
+          : tab === 2 ? <DeviceTab onOpen={open} />
+          : <SettingsTab onWithdraw={() => setWithdraw(true)} onOpen={open} />}
       </div>
       <BottomNav
         items={[{ icon: 'house', label: '홈' }, { icon: 'coins', label: '누적 보상' }, { icon: 'watch', label: '기기 연결' }, { icon: 'settings', label: '설정' }]}
