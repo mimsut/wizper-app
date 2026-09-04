@@ -198,7 +198,7 @@ export function Home() {
         {tab === 0 ? home : tab === 1 ? rewards : tab === 2 ? placeholder('기기 연결', 'watch') : placeholder('설정', 'settings')}
       </div>
       <BottomNav
-        items={[{ icon: 'home', label: '홈' }, { icon: 'coins', label: '누적 보상' }, { icon: 'watch', label: '기기 연결' }, { icon: 'settings', label: '설정' }]}
+        items={[{ icon: 'house', label: '홈' }, { icon: 'coins', label: '누적 보상' }, { icon: 'watch', label: '기기 연결' }, { icon: 'settings', label: '설정' }]}
         activeIndex={tab} onChange={setTab}
       />
     </div>

@@ -9,6 +9,29 @@ import { Amount } from './components/reward/Amount.jsx';
 import { ProgressBar } from './components/reward/ProgressBar.jsx';
 import { ProgressRing } from './components/reward/ProgressRing.jsx';
 
+/* ────────── 토스트 (폰 프레임 안 피드백) ────────── */
+let _pushToast = () => {};
+function toast(msg) { _pushToast(msg); }
+function ToastHost() {
+  const [items, setItems] = React.useState([]);
+  const idRef = React.useRef(0);
+  React.useEffect(() => {
+    _pushToast = (msg) => {
+      const id = ++idRef.current;
+      setItems((x) => [...x, { id, msg }]);
+      setTimeout(() => setItems((x) => x.filter((t) => t.id !== id)), 2000);
+    };
+    return () => { _pushToast = () => {}; };
+  }, []);
+  return (
+    <div style={{ position: 'absolute', bottom: 84, left: 20, right: 20, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 30, alignItems: 'center', pointerEvents: 'none' }}>
+      {items.map((t) => (
+        <div key={t.id} style={{ background: 'var(--wz-gray-900)', color: '#fff', font: '500 13px/1.4 var(--font-sans)', padding: '10px 16px', borderRadius: 12, boxShadow: '0 4px 16px rgba(25,31,40,.24)', maxWidth: '100%', textAlign: 'center' }}>{t.msg}</div>
+      ))}
+    </div>
+  );
+}
+
 /* ────────── 공통 chrome ────────── */
 function StatusBar() {
   return (
@@ -141,7 +164,7 @@ function ScrPairing({ go }) {
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: 'var(--text-caption)', color: 'var(--text-weak)' }}>
             <Icon name="loader" size={14} color="var(--text-weak)" />주변 기기를 계속 찾고 있어요
           </span>
-          <Button variant="ghost">다시 검색</Button>
+          <Button variant="ghost" onClick={() => toast('주변 기기를 다시 검색 중이에요')}>다시 검색</Button>
         </div>
       </Body>
       <CTA label="다음" disabled={!connected} onClick={() => go('permissions')} sub={connected ? null : '페어링에 문제가 있나요?'} />
@@ -293,7 +316,7 @@ function HomeTab({ done, voiceDone, onStartSurvey, onStartVoice, goRewards }) {
           <div style={{ font: 'var(--text-title)', letterSpacing: 'var(--tracking-tight)' }}>안녕하세요, WPR-135님</div>
           <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)', marginTop: 2 }}>오늘도 소중한 참여 부탁드려요</div>
         </div>
-        <Icon name="bell" size={22} color="var(--text-sub)" style={{ marginTop: 4 }} />
+        <button onClick={() => toast('알림 3건 (목업)')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, marginTop: 4 }}><Icon name="bell" size={22} color="var(--text-sub)" /></button>
       </div>
       <Card padding={20}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{cap('오늘 적립액')}<Icon name="info" size={13} color="var(--text-weak)" /></div>
@@ -309,7 +332,7 @@ function HomeTab({ done, voiceDone, onStartSurvey, onStartVoice, goRewards }) {
           <Icon name="chevron-right" size={18} color="var(--text-weak)" style={{ marginLeft: 4 }} />
         </div>
       </Card>
-      <Card padding={'16px 20px'} onClick={() => {}} style={{ background: 'var(--color-primary-tint)' }}>
+      <Card padding={'16px 20px'} onClick={() => toast('오늘 설문 4회 + 음성 1회 완료 시 보너스 1,000원')} style={{ background: 'var(--color-primary-tint)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ width: 40, height: 40, borderRadius: 20, background: 'var(--color-primary-weak)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="gift" size={20} color="var(--color-primary)" />
@@ -420,7 +443,7 @@ function DeviceTab() {
           <span style={{ font: 'var(--text-caption)', color: 'var(--text-body)' }}>연결이 끊기면 자동으로 다시 연결을 시도해요. 계속 실패하면 알림으로 알려드려요.</span>
         </div>
       </Card>
-      <Button variant="secondary" size="lg" style={{ width: '100%' }}>다시 연결하기</Button>
+      <Button variant="secondary" size="lg" style={{ width: '100%' }} onClick={() => toast('WIZPR RING 재연결을 시도해요')}>다시 연결하기</Button>
     </div>
   );
 }
@@ -443,6 +466,7 @@ function SettingsTab({ onWithdraw }) {
           <React.Fragment key={t}>
             {i > 0 ? <div style={{ height: 1, background: 'var(--divider)' }} /> : null}
             <ListRow
+              onClick={() => toast(t === '설문 시간' ? '설문 시간은 연구 시작 후 변경할 수 없어요' : t + ' (목업)')}
               left={<Icon name={ic} size={20} color="var(--text-weak)" />}
               title={t}
               right={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -454,7 +478,7 @@ function SettingsTab({ onWithdraw }) {
         ))}
       </Card>
       <Card padding={'6px 20px'}>
-        <ListRow left={<Icon name="headphones" size={20} color="var(--text-weak)" />} title="연구팀에 문의하기" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+        <ListRow onClick={() => toast('연구팀 문의 채널 (목업)')} left={<Icon name="headphones" size={20} color="var(--text-weak)" />} title="연구팀에 문의하기" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
         <div style={{ height: 1, background: 'var(--divider)' }} />
         <ListRow onClick={onWithdraw} left={<Icon name="log-out" size={20} color="var(--color-danger)" />} title={<span style={{ color: 'var(--color-danger)' }}>연구 참여 철회</span>} />
       </Card>
@@ -478,7 +502,7 @@ function MainApp({ done, voiceDone, onStartSurvey, onStartVoice, onWithdraw }) {
           : <SettingsTab onWithdraw={() => setWithdraw(true)} />}
       </div>
       <BottomNav
-        items={[{ icon: 'home', label: '홈' }, { icon: 'coins', label: '누적 보상' }, { icon: 'watch', label: '기기 연결' }, { icon: 'settings', label: '설정' }]}
+        items={[{ icon: 'house', label: '홈' }, { icon: 'coins', label: '누적 보상' }, { icon: 'watch', label: '기기 연결' }, { icon: 'settings', label: '설정' }]}
         activeIndex={tab} onChange={setTab}
       />
       {withdraw ? (
@@ -683,9 +707,48 @@ export function Prototype() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--wz-gray-200)', padding: 24, fontFamily: 'var(--font-sans)', color: 'var(--text-strong)', letterSpacing: 'var(--tracking-body)' }}>
+      <ScreenJump current={screen} onJump={go} />
       <div style={{ position: 'relative', width: 390, height: 844, maxHeight: '96vh', background: 'var(--surface-bg)', borderRadius: 40, overflow: 'hidden', outline: '1px solid var(--wz-gray-300)', display: 'flex', flexDirection: 'column' }}>
         {content}
+        <ToastHost />
       </div>
+    </div>
+  );
+}
+
+/* 화면 점프 메뉴 — 모든 화면 직접 이동 (프로토타입 네비게이션) */
+const SCREEN_LIST = [
+  ['온보딩', [['account', '1 · 계정 생성'], ['pairing', '2 · 링 페어링'], ['permissions', '3 · 권한 요청'], ['emaTime', '4 · EMA 시간 설정'], ['ready', '5 · 준비 완료']]],
+  ['메인', [['home', '홈 · 누적보상 · 기기 · 설정']]],
+  ['EMA 설문', [['survey', '설문 4단계'], ['surveyDone', '설문 완료 · 보상']]],
+  ['음성 과제', [['voiceReady', '준비'], ['voiceRec', '녹음 중'], ['voiceDone', '완료 · 보상']]],
+];
+function ScreenJump({ current, onJump }) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (!open) return;
+    const on = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', on);
+    return () => document.removeEventListener('mousedown', on);
+  }, [open]);
+  return (
+    <div ref={ref} style={{ position: 'fixed', top: 16, right: 16, zIndex: 100 }}>
+      <button onClick={() => setOpen((o) => !o)} style={{ border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: 999, background: open ? 'var(--color-primary)' : 'var(--surface-card)', color: open ? '#fff' : 'var(--text-sub)', font: '600 13px/1 var(--font-sans)', boxShadow: '0 1px 2px rgba(25,31,40,.08)' }}>
+        <Icon name="layout-grid" size={14} color={open ? '#fff' : 'var(--text-sub)'} />화면 이동
+      </button>
+      {open ? (
+        <div style={{ position: 'absolute', top: 42, right: 0, width: 240, background: 'var(--surface-card)', borderRadius: 14, boxShadow: '0 8px 32px rgba(25,31,40,.18)', padding: 8, display: 'flex', flexDirection: 'column', gap: 4, maxHeight: '80vh', overflowY: 'auto' }}>
+          {SCREEN_LIST.map(([group, items]) => (
+            <div key={group}>
+              <div style={{ font: '600 11px/1 var(--font-sans)', color: 'var(--text-weak)', padding: '8px 10px 4px' }}>{group}</div>
+              {items.map(([key, label]) => (
+                <button key={key} onClick={() => { onJump(key); setOpen(false); }} style={{ border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 8, font: '500 13px/1.3 var(--font-sans)', background: current === key ? 'var(--color-primary-weak)' : 'transparent', color: current === key ? 'var(--color-primary)' : 'var(--text-body)' }}>{label}</button>
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
