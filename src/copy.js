@@ -58,7 +58,7 @@ export const KO = {
   "home_today_earned": "오늘 적립액",
   "home_total": "총 누적액",
   "home_reset_note": "매일 자정에 총 누적액으로 옮겨져요",
-  "home_bonus_banner": "오늘 모든 참여를 완료하면 보너스 1,000원을 드려요",
+  "home_bonus_banner": "오늘 모든 참여를 완료하면 보너스 800원을 드려요",
   "home_today_survey": "오늘의 설문",
   "home_survey_sub": "하루 4번, 각 회차 1시간 이내에 참여할 수 있어요",
   "home_join": "참여하기",

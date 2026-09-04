@@ -418,7 +418,7 @@ function HomeTab({ done, voiceDone, onStartSurvey, onStartVoice, goRewards, onBe
           <Icon name="chevron-right" size={18} color="var(--text-weak)" style={{ marginLeft: 4 }} />
         </div>
       </Card>
-      <Card padding={'16px 20px'} onClick={() => toast('오늘 설문 4회 + 음성 1회 완료 시 보너스 1,000원')} style={{ background: 'var(--color-primary-tint)' }}>
+      <Card padding={'16px 20px'} onClick={() => toast('오늘 설문 4회 + 음성 1회 완료 시 보너스 800원')} style={{ background: 'var(--color-primary-tint)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ width: 40, height: 40, borderRadius: 20, background: 'var(--color-primary-weak)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="gift" size={20} color="var(--color-primary)" />
@@ -465,7 +465,7 @@ function HomeTab({ done, voiceDone, onStartSurvey, onStartVoice, goRewards, onBe
             {[
               { name: '자기보고 설문', n: doneCount, of: 4, v: doneCount * 250, max: 1000 },
               { name: '음성 발화 과제', n: voiceDone ? 1 : 0, of: 1, v: voiceDone ? VOICE_REWARD : 0, max: VOICE_REWARD },
-              { name: '참여 완료 보너스', n: 0, of: 1, v: 0, max: 1000 }
+              { name: '참여 완료 보너스', n: 0, of: 1, v: 0, max: 800 }
             ].map((r) => (
               <div key={r.name}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', font: 'var(--text-caption)', marginBottom: 5 }}>
@@ -620,7 +620,7 @@ function ConsentPage() {
   const secs = [
     ['연구 목적', '이 연구는 사회적 고립과 정서 상태를 일상 속에서 측정하기 위한 디지털 표현형(DP) 연구입니다. 하루 4회 짧은 자기보고 설문과 1회 음성 발화 과제, 그리고 반지형 기기·스마트폰 센서를 통해 데이터를 수집합니다.'],
     ['수집 항목', '자기보고 설문 응답, 음성 발화(기기 내 계산값), 신체활동·화면 사용·앱 사용·위치 반경 등 센서 지표. 위치 좌표 원본이나 통화 내용 원문은 서버로 전송되지 않습니다.'],
-    ['참여 기간·보상', '약 4주간 진행되며, 설문 1회 250원·음성 과제 1회 500원, 당일 전체 완료 시 보너스 1,000원이 적립됩니다. 보상은 연구 종료 후 일괄 지급됩니다.'],
+    ['참여 기간·보상', '기본 참가비 100,000원에 더해 설문 1회 250원, 음성 과제 1회 700원, 당일 전체 완료 시 보너스 800원이 적립됩니다. 보상은 연구 종료 후 일괄 지급됩니다.'],
     ['자발적 참여·철회', '참여는 자발적이며 언제든 불이익 없이 철회할 수 있습니다. 철회 시 이후 데이터 수집은 즉시 중단됩니다.'],
     ['개인정보 보호', '모든 데이터는 연구 ID로 익명화되어 저장되며, IRB 승인 범위 내에서만 사용됩니다.'],
   ];
