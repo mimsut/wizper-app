@@ -128,58 +128,62 @@ function InputField({ label, value, onChange, placeholder, type = 'text', right,
     </div>
   );
 }
+function GoogleMark({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z" />
+      <path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z" />
+      <path fill="#FBBC05" d="M11.69 28.18c-.44-1.32-.69-2.73-.69-4.18s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z" />
+      <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z" />
+    </svg>
+  );
+}
 function ScrAccount({ go }) {
-  const [email, setEmail] = React.useState('');
-  const [pw, setPw] = React.useState('');
-  const [pw2, setPw2] = React.useState('');
-  const [phone, setPhone] = React.useState('');
-  const [code, setCode] = React.useState('');
-  const [codeSent, setCodeSent] = React.useState(false);
-  const [verified, setVerified] = React.useState(false);
-  const [age, setAge] = React.useState('');
-  const [sex, setSex] = React.useState(null);
-  const [touched, setTouched] = React.useState(false);
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const pwOk = pw.length >= 8 && /[a-zA-Z]/.test(pw) && /\d/.test(pw) && /[^a-zA-Z0-9]/.test(pw);
-  const pw2Ok = pw2 === pw && pw2.length > 0;
-  const phoneOk = /^01\d-?\d{3,4}-?\d{4}$/.test(phone.replace(/\s/g, ''));
-  const ageOk = /^\d{1,3}$/.test(age) && +age >= 14 && +age <= 100;
-  const allOk = emailOk && pwOk && pw2Ok && verified && ageOk && sex !== null;
-  const err = (cond, msg) => (touched && !cond ? msg : null);
-  const sendCode = () => { setCodeSent(true); setVerified(false); toast('인증번호를 전송했어요'); };
-  const confirmCode = () => { if (code.length === 6) { setVerified(true); toast('휴대폰 인증 완료'); } };
+  // 인증은 Google 계정으로만. 휴대폰 인증 없음.
+  // 성별·연락처·연령 등 기본 정보와 연구 ID는 관리자가 이메일 기준으로 사전 등록·발급 → 앱은 표시만.
+  const [signed, setSigned] = React.useState(false);
+  const account = { email: 'minji.k@gmail.com', id: 'WPR-135', sex: '여성', age: 24 };
   return (
     <>
       <StatusBar /><Dot n={0} total={4} />
       <Body gap={14}>
-        <Title main={KO.onb_account_title} sub={KO.onb_account_sub} />
-        <InputField label={KO.onb_account_email} value={email} onChange={setEmail} placeholder={KO.onb_account_email_ph} type="email" error={err(emailOk, '올바른 이메일을 입력해 주세요')} />
-        <div>
-          <InputField label={KO.onb_account_pw} value={pw} onChange={setPw} placeholder={KO.onb_account_pw_ph} type="password" error={err(pwOk, KO.onb_account_pwnotice)} />
-          <div style={{ font: 'var(--text-micro)', color: 'var(--text-weak)', marginTop: 4 }}>{KO.onb_account_pwnotice}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '32px 0 8px' }}>
+          <span style={{ width: 64, height: 64, borderRadius: 20, background: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="audio-waveform" size={34} color="#fff" />
+          </span>
+          <div style={{ font: 'var(--text-display)', letterSpacing: 'var(--tracking-tight)', textAlign: 'center' }}>{KO.onb_account_title}</div>
+          <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)', textAlign: 'center', whiteSpace: 'pre-line' }}>{KO.onb_account_sub}</div>
         </div>
-        <InputField label={KO.onb_account_pwagain} value={pw2} onChange={setPw2} placeholder={KO.onb_account_pwagain_ph} type="password" error={err(pw2Ok, '비밀번호가 일치하지 않아요')} />
-        <InputField label={KO.onb_account_phone} value={phone} onChange={(v) => { setPhone(v); setCodeSent(false); setVerified(false); }} placeholder={KO.onb_account_phone_ph} type="tel" inputMode="tel"
-          error={err(phoneOk, '올바른 번호를 입력해 주세요')}
-          right={<Button variant="secondary" disabled={!phoneOk || verified} onClick={sendCode} style={{ height: 52, flexShrink: 0 }}>{verified ? KO.onb_account_verified : KO.onb_account_verify}</Button>} />
-        {codeSent && !verified ? (
-          <InputField label="인증번호" value={code} onChange={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))} placeholder={KO.onb_account_verify_ph} inputMode="numeric"
-            error={err(true, null)}
-            right={<Button disabled={code.length !== 6} onClick={confirmCode} style={{ height: 52, flexShrink: 0 }}>확인</Button>} />
-        ) : null}
-        <div style={{ display: 'flex', gap: 12 }}>
-          <div style={{ flex: 1 }}><InputField label={KO.onb_account_birth} value={age} onChange={(v) => setAge(v.replace(/\D/g, '').slice(0, 3))} placeholder={KO.onb_account_birth_ph} inputMode="numeric" error={err(ageOk, '연령을 확인해 주세요')} /></div>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span style={{ font: 'var(--text-label)', color: 'var(--text-sub)' }}>{KO.onb_account_sex}</span>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {[KO.onb_account_sex_female, KO.onb_account_sex_male].map((g, i) => (
-                <span key={i} onClick={() => setSex(i)} style={{ flex: 1, height: 52, borderRadius: 14, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', font: 'var(--text-body1)', background: i === sex ? 'var(--color-primary-weak)' : 'var(--surface-card)', color: i === sex ? 'var(--color-primary)' : 'var(--text-sub)', outline: touched && sex === null ? '1.5px solid var(--color-danger)' : 'none' }}>{g}</span>
-              ))}
-            </div>
-          </div>
-        </div>
+        {signed ? (
+          <>
+            <Card padding={'6px 20px'}>
+              <ListRow left={<GoogleMark size={22} />} title={<span style={{ font: 'var(--text-body1)' }}>{account.email}</span>} subtitle={KO.onb_login_signed} right={<Icon name="circle-check-big" size={20} color="var(--color-success)" />} />
+            </Card>
+            <Card padding={20} style={{ background: 'var(--color-primary-tint)' }}>
+              <div style={{ font: 'var(--text-caption)', color: 'var(--text-sub)' }}>{KO.onb_login_issued_id}</div>
+              <div style={{ font: '700 24px/30px var(--font-sans)', color: 'var(--color-primary)', letterSpacing: 'var(--tracking-tight)', marginTop: 2 }}>{account.id}</div>
+              <div style={{ height: 1, background: 'var(--divider)', margin: '12px 0' }} />
+              <div style={{ font: 'var(--text-micro)', color: 'var(--text-weak)', marginBottom: 6 }}>{KO.onb_login_info}</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Chip tone="neutral">{account.sex}</Chip>
+                <Chip tone="neutral">{account.age}세</Chip>
+              </div>
+            </Card>
+          </>
+        ) : (
+          <div style={{ font: 'var(--text-caption)', color: 'var(--text-sub)', textAlign: 'center', padding: '0 8px', lineHeight: 1.6 }}>{KO.onb_login_note}</div>
+        )}
       </Body>
-      <CTA label={KO.common_next} onClick={() => { if (allOk) go('pairing'); else { setTouched(true); toast('입력 정보를 확인해 주세요'); } }} sub={allOk ? null : '모든 항목을 올바르게 입력하면 진행할 수 있어요'} />
+      {signed ? (
+        <CTA label={KO.common_next} onClick={() => go('pairing')} />
+      ) : (
+        <div style={{ padding: '12px 20px 24px', flexShrink: 0 }}>
+          <Button size="lg" variant="neutral" onClick={() => { setSigned(true); toast('Google 계정으로 로그인했어요'); }}
+            style={{ width: '100%', background: 'var(--surface-card)', color: 'var(--text-strong)', outline: '1px solid var(--divider)', gap: 10 }}>
+            <GoogleMark size={18} />{KO.onb_login_google}
+          </Button>
+        </div>
+      )}
     </>
   );
 }

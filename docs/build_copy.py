@@ -4,26 +4,16 @@ from openpyxl.styles import Alignment, Font, PatternFill
 
 # (key, ko, change, note)  change: 신규/분리/변수명수정/문구수정/유지
 CAT = [
- # ── 온보딩 · 계정 ──
- ("onb_account_title","계정을 생성해 주세요","문구수정","제목 변경"),
- ("onb_account_sub","WIZPR 서비스를 이용하기 위해 아래 정보를 입력해 주세요.","분리","제목 셀에 붙어있던 안내문 분리"),
- ("onb_account_email","이메일","유지",""),
- ("onb_account_email_ph","이메일을 입력해 주세요","분리","라벨 셀에 붙어있던 입력 플레이스홀더 분리"),
- ("onb_account_pw","비밀번호","유지",""),
- ("onb_account_pw_ph","비밀번호를 입력해 주세요","분리","플레이스홀더 분리"),
- ("onb_account_pwnotice","영문, 숫자, 특수문자 포함 8자 이상","신규","비밀번호 조건 안내"),
- ("onb_account_pwagain","비밀번호 확인","신규",""),
- ("onb_account_pwagain_ph","비밀번호를 다시 입력해 주세요","분리","플레이스홀더 분리"),
- ("onb_account_phone","휴대폰 번호","유지",""),
- ("onb_account_phone_ph","'-' 없이 휴대폰 번호를 입력해 주세요","분리","플레이스홀더 분리"),
- ("onb_account_verify","인증하기","유지","버튼 라벨"),
- ("onb_account_verify_ph","인증번호 6자리를 입력해 주세요","분리","인증번호 입력 플레이스홀더 (버튼과 분리)"),
- ("onb_account_verified","인증됨","유지",""),
- ("onb_account_birth","연령","문구수정","출생연도 → 연령"),
- ("onb_account_birth_ph","연령을 선택해 주세요","분리","플레이스홀더 분리"),
- ("onb_account_sex","성별","유지",""),
- ("onb_account_sex_female","여성","분리","'남성/여성' 옵션 분리"),
- ("onb_account_sex_male","남성","분리","'남성/여성' 옵션 분리"),
+ # ── 온보딩 · 로그인 (Google 계정 전용) ──
+ # 인증은 Google 계정으로만. 휴대폰 인증 없음. 성별·연락처 등 기본 정보와 연구 ID는
+ # 관리자가 어드민에서 이메일 기준으로 등록·발급 (앱에서는 입력받지 않음).
+ ("onb_account_title","위즈퍼링에 로그인","문구수정","계정 생성 폼 → Google 로그인"),
+ ("onb_account_sub","연구 담당자가 등록한 Google 계정으로 로그인해 주세요","문구수정","안내문 변경"),
+ ("onb_login_google","Google로 계속하기","신규","유일한 로그인 수단"),
+ ("onb_login_note","휴대폰 인증 없이 Google 계정으로만 로그인해요. 성별·연락처 등 기본 정보는 연구 담당자가 등록해요.","신규","로그인 정책 안내"),
+ ("onb_login_signed","로그인됐어요","신규",""),
+ ("onb_login_issued_id","발급된 연구 ID","신규","이메일 기준 관리자 발급"),
+ ("onb_login_info","관리자가 등록한 기본 정보","신규",""),
  ("common_next","다음","유지",""),
  # ── 온보딩 · 페어링 ──
  ("onb_pairing_title","WIZPR RING을 연결해 주세요","문구수정","제목 변경, 끝 개행 제거"),
