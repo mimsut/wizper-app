@@ -8,6 +8,9 @@ import { BottomNav } from './components/core/BottomNav.jsx';
 import { Amount } from './components/reward/Amount.jsx';
 import { ProgressBar } from './components/reward/ProgressBar.jsx';
 import { ProgressRing } from './components/reward/ProgressRing.jsx';
+import { KO, t } from './copy.js';
+
+const VOICE_REWARD = 700;
 
 /* ────────── 토스트 (폰 프레임 안 피드백) ────────── */
 let _pushToast = () => {};
@@ -128,40 +131,55 @@ function InputField({ label, value, onChange, placeholder, type = 'text', right,
 function ScrAccount({ go }) {
   const [email, setEmail] = React.useState('');
   const [pw, setPw] = React.useState('');
+  const [pw2, setPw2] = React.useState('');
   const [phone, setPhone] = React.useState('');
-  const [birth, setBirth] = React.useState('');
-  const [sex, setSex] = React.useState(0);
+  const [code, setCode] = React.useState('');
+  const [codeSent, setCodeSent] = React.useState(false);
   const [verified, setVerified] = React.useState(false);
+  const [age, setAge] = React.useState('');
+  const [sex, setSex] = React.useState(null);
   const [touched, setTouched] = React.useState(false);
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const pwOk = pw.length >= 8;
+  const pwOk = pw.length >= 8 && /[a-zA-Z]/.test(pw) && /\d/.test(pw) && /[^a-zA-Z0-9]/.test(pw);
+  const pw2Ok = pw2 === pw && pw2.length > 0;
   const phoneOk = /^01\d-?\d{3,4}-?\d{4}$/.test(phone.replace(/\s/g, ''));
-  const birthOk = /^(19|20)\d{2}$/.test(birth) && +birth >= 1930 && +birth <= 2012;
-  const allOk = emailOk && pwOk && verified && birthOk;
+  const ageOk = /^\d{1,3}$/.test(age) && +age >= 14 && +age <= 100;
+  const allOk = emailOk && pwOk && pw2Ok && verified && ageOk && sex !== null;
   const err = (cond, msg) => (touched && !cond ? msg : null);
+  const sendCode = () => { setCodeSent(true); setVerified(false); toast('인증번호를 전송했어요'); };
+  const confirmCode = () => { if (code.length === 6) { setVerified(true); toast('휴대폰 인증 완료'); } };
   return (
     <>
       <StatusBar /><Dot n={0} total={4} />
       <Body gap={14}>
-        <Title main={'연구 참여를 위해\n계정을 만들어 주세요'} />
-        <InputField label="이메일" value={email} onChange={setEmail} placeholder="you@example.com" type="email" error={err(emailOk, '올바른 이메일을 입력해 주세요')} />
-        <InputField label="비밀번호" value={pw} onChange={setPw} placeholder="8자 이상" type="password" error={err(pwOk, '비밀번호는 8자 이상이에요')} />
-        <InputField label="휴대폰 번호" value={phone} onChange={(v) => { setPhone(v); setVerified(false); }} placeholder="010-0000-0000" type="tel" inputMode="tel"
-          error={err(verified, phoneOk ? '인증을 완료해 주세요' : '올바른 번호를 입력해 주세요')}
-          right={<Button variant={verified ? 'secondary' : 'primary'} disabled={!phoneOk || verified} onClick={() => { setVerified(true); toast('인증번호 확인 완료'); }} style={{ height: 52, flexShrink: 0 }}>{verified ? '인증됨' : '인증'}</Button>} />
+        <Title main={KO.onb_account_title} sub={KO.onb_account_sub} />
+        <InputField label={KO.onb_account_email} value={email} onChange={setEmail} placeholder={KO.onb_account_email_ph} type="email" error={err(emailOk, '올바른 이메일을 입력해 주세요')} />
+        <div>
+          <InputField label={KO.onb_account_pw} value={pw} onChange={setPw} placeholder={KO.onb_account_pw_ph} type="password" error={err(pwOk, KO.onb_account_pwnotice)} />
+          <div style={{ font: 'var(--text-micro)', color: 'var(--text-weak)', marginTop: 4 }}>{KO.onb_account_pwnotice}</div>
+        </div>
+        <InputField label={KO.onb_account_pwagain} value={pw2} onChange={setPw2} placeholder={KO.onb_account_pwagain_ph} type="password" error={err(pw2Ok, '비밀번호가 일치하지 않아요')} />
+        <InputField label={KO.onb_account_phone} value={phone} onChange={(v) => { setPhone(v); setCodeSent(false); setVerified(false); }} placeholder={KO.onb_account_phone_ph} type="tel" inputMode="tel"
+          error={err(phoneOk, '올바른 번호를 입력해 주세요')}
+          right={<Button variant="secondary" disabled={!phoneOk || verified} onClick={sendCode} style={{ height: 52, flexShrink: 0 }}>{verified ? KO.onb_account_verified : KO.onb_account_verify}</Button>} />
+        {codeSent && !verified ? (
+          <InputField label="인증번호" value={code} onChange={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))} placeholder={KO.onb_account_verify_ph} inputMode="numeric"
+            error={err(true, null)}
+            right={<Button disabled={code.length !== 6} onClick={confirmCode} style={{ height: 52, flexShrink: 0 }}>확인</Button>} />
+        ) : null}
         <div style={{ display: 'flex', gap: 12 }}>
-          <div style={{ flex: 1 }}><InputField label="출생연도" value={birth} onChange={setBirth} placeholder="예: 2002" inputMode="numeric" error={err(birthOk, '연도 4자리')} /></div>
+          <div style={{ flex: 1 }}><InputField label={KO.onb_account_birth} value={age} onChange={(v) => setAge(v.replace(/\D/g, '').slice(0, 3))} placeholder={KO.onb_account_birth_ph} inputMode="numeric" error={err(ageOk, '연령을 확인해 주세요')} /></div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span style={{ font: 'var(--text-label)', color: 'var(--text-sub)' }}>성별</span>
+            <span style={{ font: 'var(--text-label)', color: 'var(--text-sub)' }}>{KO.onb_account_sex}</span>
             <div style={{ display: 'flex', gap: 6 }}>
-              {['여성', '남성'].map((g, i) => (
-                <span key={g} onClick={() => setSex(i)} style={{ flex: 1, height: 52, borderRadius: 14, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', font: 'var(--text-body1)', background: i === sex ? 'var(--color-primary-weak)' : 'var(--surface-card)', color: i === sex ? 'var(--color-primary)' : 'var(--text-sub)' }}>{g}</span>
+              {[KO.onb_account_sex_female, KO.onb_account_sex_male].map((g, i) => (
+                <span key={i} onClick={() => setSex(i)} style={{ flex: 1, height: 52, borderRadius: 14, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', font: 'var(--text-body1)', background: i === sex ? 'var(--color-primary-weak)' : 'var(--surface-card)', color: i === sex ? 'var(--color-primary)' : 'var(--text-sub)', outline: touched && sex === null ? '1.5px solid var(--color-danger)' : 'none' }}>{g}</span>
               ))}
             </div>
           </div>
         </div>
       </Body>
-      <CTA label="다음" onClick={() => { if (allOk) go('pairing'); else { setTouched(true); toast('입력 정보를 확인해 주세요'); } }} sub={allOk ? null : '모든 항목을 올바르게 입력하면 진행할 수 있어요'} />
+      <CTA label={KO.common_next} onClick={() => { if (allOk) go('pairing'); else { setTouched(true); toast('입력 정보를 확인해 주세요'); } }} sub={allOk ? null : '모든 항목을 올바르게 입력하면 진행할 수 있어요'} />
     </>
   );
 }
@@ -176,7 +194,7 @@ function ScrPairing({ go }) {
     <>
       <StatusBar /><Dot n={1} total={4} />
       <Body gap={12}>
-        <Title main={'반지를 찾았어요\n연결해 주세요'} sub="반지를 손가락에 착용한 상태로 진행해 주세요" />
+        <Title main={KO.onb_pairing_title} sub={KO.onb_pairing_sub} />
         <Card padding={20}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <span style={{ width: 48, height: 48, borderRadius: 24, background: connected ? 'var(--color-success-weak)' : 'var(--color-primary-weak)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -188,7 +206,7 @@ function ScrPairing({ go }) {
                 <Icon name="bluetooth" size={12} color={connected ? 'var(--color-success)' : 'var(--color-primary)'} />{connected ? '연결됨' : '신호 강함'}
               </div>
             </div>
-            <Button size="sm" variant={connected ? 'secondary' : 'primary'} onClick={() => setConnected(true)}>{connected ? '연결됨' : '연결하기'}</Button>
+            <Button size="sm" variant={connected ? 'secondary' : 'primary'} onClick={() => setConnected(true)}>{connected ? '연결됨' : KO.onb_pairing_connect}</Button>
           </div>
         </Card>
         {struggling ? (
@@ -204,14 +222,14 @@ function ScrPairing({ go }) {
           </Card>
         ) : null}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginTop: struggling ? 8 : 24 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: 'var(--text-caption)', color: 'var(--text-weak)' }}>
-            <Icon name="loader" size={14} color="var(--text-weak)" />주변 기기를 계속 찾고 있어요
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: 'var(--text-caption)', color: 'var(--text-weak)', textAlign: 'center', whiteSpace: 'pre-line' }}>
+            <Icon name="loader" size={14} color="var(--text-weak)" />{KO.onb_pairing_scanning}
           </span>
-          <Button variant="ghost" onClick={retry}>다시 검색</Button>
+          <Button variant="ghost" onClick={retry}>{KO.onb_pairing_rescan}</Button>
         </div>
       </Body>
-      <CTA label="다음" disabled={!connected} onClick={() => go('permissions')}
-        sub={connected ? null : <span onClick={() => setHelp(true)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>페어링에 문제가 있나요?</span>} />
+      <CTA label={KO.common_next} disabled={!connected} onClick={() => go('permissions')}
+        sub={connected ? null : <span onClick={() => setHelp(true)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>{KO.onb_pairing_help}</span>} />
       {help ? <ContactDialog title="반지 연결이 계속 안 되나요?" body={'연구진이 원격으로 도와드릴 수 있어요.\n아래 채널로 연락해 주세요.'} onClose={() => setHelp(false)} /> : null}
     </>
   );
@@ -252,23 +270,23 @@ function ScrPermissions({ go }) {
     <>
       <StatusBar /><Dot n={2} total={4} />
       <Body gap={12}>
-        <Title main={'연구에 필요한 권한을\n허용해 주세요'} sub="권한이 꺼져 있는 동안의 기록은 다시 수집할 수 없어요" />
+        <Title main={KO.onb_perm_title} sub={KO.onb_perm_sub} />
         <Card padding={'6px 20px'}>
-          <PermRow icon="bell" name="알림" desc="설문 시간을 알려드려요" ok />
+          <PermRow icon="bell" name={KO.onb_perm_noti} desc={KO.onb_perm_noti_desc} ok />
           <div style={{ height: 1, background: 'var(--divider)' }} />
-          <PermRow icon="map-pin" name="위치" desc="외출 반경 · 이동 거리만 계산해요" ok />
+          <PermRow icon="map-pin" name={KO.onb_perm_loc} desc={KO.onb_perm_loc_desc} ok />
           <div style={{ height: 1, background: 'var(--divider)' }} />
-          <PermRow icon="footprints" name="신체활동" desc="걸음 수와 활동 시간을 수집해요" ok />
+          <PermRow icon="footprints" name={KO.onb_perm_activity} desc={KO.onb_perm_activity_desc} ok />
           <div style={{ height: 1, background: 'var(--divider)' }} />
-          <PermRow icon="bluetooth" name="Bluetooth" desc="반지와 연결을 유지해요" ok />
+          <PermRow icon="bluetooth" name={KO.onb_perm_bt} desc={KO.onb_perm_bt_desc} ok />
           <div style={{ height: 1, background: 'var(--divider)' }} />
-          <PermRow icon="battery-charging" name="배터리 사용 제한 해제" desc="백그라운드 수집이 끊기지 않아요" ok={battery} onFix={() => setBattery(true)} />
+          <PermRow icon="battery-charging" name={KO.onb_perm_battery} desc={KO.onb_perm_battery_desc} ok={battery} onFix={() => setBattery(true)} />
         </Card>
         <div style={{ font: 'var(--text-micro)', color: 'var(--text-weak)', padding: '0 4px' }}>
-          위치 좌표나 통화 내용 원문은 서버로 보내지 않아요. 기기 안에서 계산한 값만 전송돼요.
+          {KO.onb_perm_privacy}
         </div>
       </Body>
-      <CTA label="다음" disabled={!battery} onClick={() => go('emaTime')} sub={battery ? null : '모든 항목을 허용하면 계속할 수 있어요'} />
+      <CTA label={KO.common_next} disabled={!battery} onClick={() => go('emaTime')} sub={battery ? null : '모든 항목을 허용하면 계속할 수 있어요'} />
     </>
   );
 }
@@ -366,7 +384,7 @@ const EMA = [
 function HomeTab({ done, voiceDone, onStartSurvey, onStartVoice, goRewards, onBell }) {
   const nowIdx = 1;
   const doneCount = Object.values(done).filter(Boolean).length;
-  const today = doneCount * 250 + (voiceDone ? 500 : 0);
+  const today = doneCount * 250 + (voiceDone ? VOICE_REWARD : 0);
   const total = 3000 + today;
   const percent = Math.round(((doneCount + (voiceDone ? 1 : 0)) / 5) * 100);
   const rowRight = (i) => {
@@ -414,7 +432,7 @@ function HomeTab({ done, voiceDone, onStartSurvey, onStartVoice, goRewards, onBe
       </Card>
       <Card padding={'16px 20px 8px'}>
         <SectionTitle extra={cap('9월 1일 (화)')}>오늘의 설문</SectionTitle>
-        <div style={{ font: 'var(--text-caption)', color: 'var(--text-sub)' }}>하루 4번, 각 회차 60분 이내에 참여할 수 있어요</div>
+        <div style={{ font: 'var(--text-caption)', color: 'var(--text-sub)' }}>{KO.home_survey_sub}</div>
         <div style={{ marginTop: 4 }}>
           {EMA.map((e, i) => (
             <React.Fragment key={e.time}>
@@ -446,7 +464,7 @@ function HomeTab({ done, voiceDone, onStartSurvey, onStartVoice, goRewards, onBe
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
               { name: '자기보고 설문', n: doneCount, of: 4, v: doneCount * 250, max: 1000 },
-              { name: '음성 발화 과제', n: voiceDone ? 1 : 0, of: 1, v: voiceDone ? 500 : 0, max: 500 },
+              { name: '음성 발화 과제', n: voiceDone ? 1 : 0, of: 1, v: voiceDone ? VOICE_REWARD : 0, max: VOICE_REWARD },
               { name: '참여 완료 보너스', n: 0, of: 1, v: 0, max: 1000 }
             ].map((r) => (
               <div key={r.name}>
@@ -729,7 +747,7 @@ function SubPage({ page, onBack }) {
 function MainApp({ done, voiceDone, onStartSurvey, onStartVoice, onWithdraw }) {
   const [tab, setTab] = React.useState(0);
   const doneCount = Object.values(done).filter(Boolean).length;
-  const today = doneCount * 250 + (voiceDone ? 500 : 0);
+  const today = doneCount * 250 + (voiceDone ? VOICE_REWARD : 0);
   const [withdraw, setWithdraw] = React.useState(false);
   const [page, setPage] = React.useState(null);
   const open = (p) => setPage(p);
@@ -756,53 +774,72 @@ function MainApp({ done, voiceDone, onStartSurvey, onStartVoice, onWithdraw }) {
 }
 
 /* ────────── 3. EMA 설문 플로우 ────────── */
-function Likert({ value, onPick }) {
-  const labels = ['전혀 아니다', '아니다', '그렇다', '매우 그렇다'];
+/* 응답 척도 (문항수 가변: 3점 라벨식 / 5·7점 양끝 라벨식) */
+function Scale({ points, labels, min, max, value, onPick }) {
+  if (labels) {
+    return (
+      <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+        {labels.map((l, i) => (
+          <span key={i} onClick={() => onPick(i)} style={{ flex: 1, minHeight: 40, borderRadius: 10, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '4px 6px', cursor: 'pointer', font: '500 12px/1.3 var(--font-sans)', background: i === value ? 'var(--color-primary)' : 'var(--surface-sunken)', color: i === value ? '#fff' : 'var(--text-sub)' }}>{l}</span>
+        ))}
+      </div>
+    );
+  }
   return (
-    <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
-      {labels.map((l, i) => (
-        <span key={l} onClick={() => onPick(i)} style={{ flex: 1, height: 40, borderRadius: 10, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', font: '500 12px/1 var(--font-sans)', background: i === value ? 'var(--color-primary)' : 'var(--surface-sunken)', color: i === value ? '#fff' : 'var(--text-sub)' }}>{l}</span>
-      ))}
+    <div style={{ marginTop: 10 }}>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {Array.from({ length: points }, (_, i) => (
+          <span key={i} onClick={() => onPick(i)} style={{ flex: 1, height: 40, borderRadius: 10, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', font: '600 14px/1 var(--font-sans)', fontVariantNumeric: 'tabular-nums', background: i === value ? 'var(--color-primary)' : 'var(--surface-sunken)', color: i === value ? '#fff' : 'var(--text-sub)' }}>{i + 1}</span>
+        ))}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, font: 'var(--text-micro)', color: 'var(--text-weak)' }}>
+        <span>{min}</span><span>{max}</span>
+      </div>
     </div>
   );
 }
-const SURVEY_STEPS = [
-  ['주변에 마음을 터놓을 사람이 없다고 느꼈다', '혼자라고 느꼈다', '사람들과 어울리고 싶지 않았다', '기분이 가라앉거나 우울했다', '사소한 일에도 불안했다'],
-  ['오늘 하루 활력이 있었다', '집중이 잘 되었다', '잠을 충분히 잤다고 느꼈다', '식사를 규칙적으로 했다', '몸이 피로했다'],
-  ['다른 사람과 대화를 나눴다', '외출을 했다', '즐거운 일이 있었다', '스트레스를 받았다', '누군가에게 도움을 요청했다'],
-  ['내일이 기대된다', '스스로가 가치 있다고 느꼈다', '감정을 잘 조절했다', '계획한 일을 해냈다', '전반적으로 만족스러운 하루였다']
+const askList = (prefix, n) => Array.from({ length: n }, (_, i) => KO['ema_' + prefix + '_ask_' + (i + 1)]);
+const SCALES = [
+  { name: '외로움', instruction: KO.ema_loneliness_instruction, items: askList('loneliness', 3), labels: [KO.ema_loneliness_scale_1, KO.ema_loneliness_scale_2, KO.ema_loneliness_scale_3] },
+  { name: '우울 · PHQ-9', instruction: KO.ema_phq_instruction, items: askList('phq', 9), points: 5, min: KO.ema_phq_scale_1, max: KO.ema_phq_scale_5 },
+  { name: '불안 · GAD-7', instruction: KO.ema_gad_instruction, items: askList('gad', 7), points: 5, min: KO.ema_gad_scale_1, max: KO.ema_gad_scale_5 },
+  { name: '현재 상태 · ESM', instruction: KO.ema_esm_instruction, items: askList('esm', 8), points: 7, min: KO.ema_esm_scale_1, max: KO.ema_esm_scale_7 },
 ];
 function SurveyFlow({ onDone, onExit }) {
   const [step, setStep] = React.useState(0);
   const [ans, setAns] = React.useState({});
   const [exit, setExit] = React.useState(false);
-  const qs = SURVEY_STEPS[step];
-  const allAnswered = qs.every((_, i) => ans[step + '-' + i] !== undefined);
+  const sc = SCALES[step];
+  const allAnswered = sc.items.every((_, i) => ans[step + '-' + i] !== undefined);
+  const last = step === SCALES.length - 1;
   return (
     <>
-      <NavHeader title="14:00 자기보고 설문" close right={<span style={{ font: 'var(--text-caption)', color: 'var(--text-weak)', fontVariantNumeric: 'tabular-nums' }}>{step + 1}/4</span>} onBack={() => setExit(true)} />
-      <div style={{ padding: '0 20px', flexShrink: 0 }}><ProgressBar value={step + 1} max={4} height={4} /></div>
+      <NavHeader title={KO.ema_title} close right={<span style={{ font: 'var(--text-caption)', color: 'var(--text-weak)', fontVariantNumeric: 'tabular-nums' }}>{step + 1}/{SCALES.length}</span>} onBack={() => setExit(true)} />
+      <div style={{ padding: '0 20px', flexShrink: 0 }}><ProgressBar value={step + 1} max={SCALES.length} height={4} /></div>
       <Body gap={20} pad="16px 20px 12px">
-        <div style={{ font: 'var(--text-caption)', color: 'var(--text-sub)' }}>지난 알림 이후, 얼마나 그렇게 느꼈는지 골라 주세요</div>
-        {qs.map((q, i) => (
+        <div>
+          <Chip tone="primary">{sc.name}</Chip>
+          <div style={{ font: 'var(--text-caption)', color: 'var(--text-sub)', marginTop: 8, whiteSpace: 'pre-line' }}>{sc.instruction}</div>
+        </div>
+        {sc.items.map((q, i) => (
           <div key={i}>
             <div style={{ font: 'var(--text-body1)', display: 'flex', gap: 8 }}>
-              <span style={{ color: ans[step + '-' + i] === undefined ? 'var(--color-primary)' : 'var(--text-weak)', fontVariantNumeric: 'tabular-nums' }}>{'Q' + (step * 5 + i + 1)}</span>
+              <span style={{ color: ans[step + '-' + i] === undefined ? 'var(--color-primary)' : 'var(--text-weak)', fontVariantNumeric: 'tabular-nums' }}>{i + 1}</span>
               <span style={{ flex: 1 }}>{q}</span>
             </div>
-            <Likert value={ans[step + '-' + i]} onPick={(v) => setAns({ ...ans, [step + '-' + i]: v })} />
+            <Scale points={sc.points} labels={sc.labels} min={sc.min} max={sc.max} value={ans[step + '-' + i]} onPick={(v) => setAns({ ...ans, [step + '-' + i]: v })} />
           </div>
         ))}
       </Body>
-      <CTA label={step < 3 ? '다음' : '제출하기'} disabled={!allAnswered} onClick={() => (step < 3 ? setStep(step + 1) : onDone())} sub={allAnswered ? null : '모든 문항에 답하면 넘어갈 수 있어요'} />
+      <CTA label={last ? '제출하기' : KO.common_next} disabled={!allAnswered} onClick={() => (last ? onDone() : setStep(step + 1))} sub={allAnswered ? null : KO.ema_next_blocked} />
       {exit ? (
-        <Dialog title="설문을 그만할까요?" body={'지금 그만두면 응답이 저장되지 않고\n이번 회차 보상 250원도 받을 수 없어요.'}
-          primary="계속 응답하기" secondary="그만하기" onPrimary={() => setExit(false)} onSecondary={onExit} />
+        <Dialog title={KO.ema_exit_title} body={KO.ema_exit_body}
+          primary={KO.ema_exit_continue} secondary={KO.ema_exit_quit} onPrimary={() => setExit(false)} onSecondary={onExit} />
       ) : null}
     </>
   );
 }
-function SurveyDone({ onHome, today, total }) {
+function SurveyDone({ onHome, today, total, n, nextT }) {
   return (
     <>
       <StatusBar />
@@ -811,22 +848,22 @@ function SurveyDone({ onHome, today, total }) {
           <span style={{ width: 72, height: 72, borderRadius: 36, background: 'var(--reward-coin-weak)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="coins" size={34} color="var(--reward-coin)" />
           </span>
-          <div style={{ font: 'var(--text-display)', letterSpacing: 'var(--tracking-tight)' }}>250원이 적립됐어요</div>
-          <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)' }}>설문에 참여해 주셔서 감사해요</div>
+          <div style={{ font: 'var(--text-display)', letterSpacing: 'var(--tracking-tight)' }}>{KO.ema_done_title}</div>
+          <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)' }}>{t('ema_done_sub', { n })}</div>
         </div>
         <Card padding={'8px 20px'}>
-          <ListRow title="오늘 적립액" right={<Amount value={today} size="md" />} />
+          <ListRow title={KO.home_today_earned} right={<Amount value={today} size="md" />} />
           <div style={{ height: 1, background: 'var(--divider)' }} />
-          <ListRow title="총 누적액" right={<Amount value={total} size="md" />} />
+          <ListRow title={KO.home_total} right={<Amount value={total} size="md" />} />
         </Card>
         <Card padding={'16px 20px'} style={{ background: 'var(--color-primary-tint)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Icon name="bell" size={18} color="var(--color-primary)" />
-            <span style={{ font: 'var(--text-body2)', color: 'var(--text-body)' }}>다음 설문은 <b style={{ color: 'var(--color-primary)' }}>18:00</b>에 열려요. 알림으로 알려드릴게요.</span>
+            <span style={{ font: 'var(--text-body2)', color: 'var(--text-body)' }}>{t('ema_done_next', { t: nextT })}</span>
           </div>
         </Card>
       </Body>
-      <CTA label="홈으로" onClick={onHome} />
+      <CTA label={KO.common_home} onClick={onHome} />
     </>
   );
 }
@@ -835,26 +872,26 @@ function SurveyDone({ onHome, today, total }) {
 function VoiceReady({ go, onBack }) {
   return (
     <>
-      <NavHeader title="음성 대화 과제" close onBack={onBack} />
+      <NavHeader title={KO.voice_title} close onBack={onBack} />
       <Body gap={14} pad="8px 20px 12px">
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <Chip tone="success"><Icon name="circle-dot" size={12} />WIZPR RING 연결됨</Chip>
+          <Chip tone="success"><Icon name="circle-dot" size={12} />{KO.voice_ring_connected}</Chip>
         </div>
         <Card padding={24} style={{ textAlign: 'center' }}>
-          <div style={{ font: 'var(--text-caption)', color: 'var(--color-primary)', marginBottom: 8 }}>오늘의 대화 주제</div>
+          <div style={{ font: 'var(--text-caption)', color: 'var(--color-primary)', marginBottom: 8 }}>{KO.voice_topic_label}</div>
           <div style={{ font: 'var(--text-title)', letterSpacing: 'var(--tracking-tight)' }}>요즘 하루를 어떻게 보내고 계세요?</div>
-          <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)', marginTop: 8 }}>답변에 따라 이어지는 질문을 드려요</div>
+          <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)', marginTop: 8 }}>{KO.voice_topic_sub}</div>
         </Card>
         <Card padding={'6px 20px'}>
-          {[['volume-1', '조용한 곳에서 편하게 이야기해 주세요'], ['timer', '최소 20초, 최대 2분 동안 진행돼요'], ['message-circle', '정답은 없어요. 떠오르는 대로 말해 주세요']].map(([ic, t], i) => (
+          {[['volume-1', KO.voice_guide_quiet], ['timer', KO.voice_guide_time], ['message-circle', KO.voice_guide_free]].map(([ic, txt], i) => (
             <React.Fragment key={ic}>
               {i > 0 ? <div style={{ height: 1, background: 'var(--divider)' }} /> : null}
-              <ListRow left={<Icon name={ic} size={18} color="var(--text-weak)" />} title={<span style={{ font: 'var(--text-body2)' }}>{t}</span>} />
+              <ListRow left={<Icon name={ic} size={18} color="var(--text-weak)" />} title={<span style={{ font: 'var(--text-body2)' }}>{txt}</span>} />
             </React.Fragment>
           ))}
         </Card>
       </Body>
-      <CTA label="대화 시작하기" onClick={() => go('voiceRec')} sub="완료하면 500원이 적립돼요" />
+      <CTA label={KO.voice_start} onClick={() => go('voiceRec')} sub={KO.voice_start_reward} />
     </>
   );
 }
@@ -868,7 +905,7 @@ function VoiceRecording({ go, onBack }) {
   const enough = sec >= 20;
   return (
     <>
-      <NavHeader title="음성 대화 과제" close onBack={onBack} right={<Chip tone="danger"><span style={{ width: 6, height: 6, borderRadius: 3, background: 'var(--color-danger)' }} />REC</Chip>} />
+      <NavHeader title={KO.voice_title} close onBack={onBack} right={<Chip tone="danger"><span style={{ width: 6, height: 6, borderRadius: 3, background: 'var(--color-danger)' }} />REC</Chip>} />
       <Body gap={16} pad="8px 20px 12px">
         <Card padding={'16px 20px'}>
           <div style={{ font: 'var(--text-caption)', color: 'var(--text-weak)', marginBottom: 4 }}>질문</div>
@@ -876,7 +913,7 @@ function VoiceRecording({ go, onBack }) {
           <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: '2px 14px 14px 14px', background: 'var(--color-primary-tint)', font: 'var(--text-body2)', color: 'var(--text-body)' }}>
             방금 산책 이야기를 해주셨는데, 산책할 때 주로 어떤 생각을 하세요?
           </div>
-          <div style={{ font: 'var(--text-micro)', color: 'var(--text-weak)', marginTop: 6 }}>이어지는 질문 · 음성으로도 들려드려요</div>
+          <div style={{ font: 'var(--text-micro)', color: 'var(--text-weak)', marginTop: 6 }}>{KO.voice_followup_note}</div>
         </Card>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '12px 0' }}>
           <ProgressRing percent={Math.round((sec / 120) * 100)} size={148} color="var(--color-success)">
@@ -886,11 +923,11 @@ function VoiceRecording({ go, onBack }) {
             </div>
           </ProgressRing>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, font: 'var(--text-caption)', color: enough ? 'var(--color-success)' : 'var(--text-weak)' }}>
-            <Icon name={enough ? 'check' : 'timer'} size={14} color={enough ? 'var(--color-success)' : 'var(--text-weak)'} />{enough ? '최소 시간을 채웠어요 · 지금 마쳐도 돼요' : `최소 ${20 - sec}초 더 이야기해 주세요`}
+            <Icon name={enough ? 'check' : 'timer'} size={14} color={enough ? 'var(--color-success)' : 'var(--text-weak)'} />{enough ? KO.voice_min_ok : `최소 ${20 - sec}초 더 이야기해 주세요`}
           </div>
         </div>
       </Body>
-      <CTA label="녹음 완료" disabled={!enough} onClick={() => go('voiceDone')} sub="말이 3초 이상 끊기면 안내를 드려요" />
+      <CTA label={KO.voice_finish} disabled={!enough} onClick={() => go('voiceDone')} sub={KO.voice_pause_hint} />
     </>
   );
 }
@@ -903,16 +940,16 @@ function VoiceDone({ onHome, today }) {
           <span style={{ width: 72, height: 72, borderRadius: 36, background: 'var(--reward-coin-weak)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="party-popper" size={34} color="var(--reward-coin)" />
           </span>
-          <div style={{ font: 'var(--text-display)', letterSpacing: 'var(--tracking-tight)' }}>500원이 적립됐어요</div>
-          <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)' }}>음성 과제를 완료했어요</div>
+          <div style={{ font: 'var(--text-display)', letterSpacing: 'var(--tracking-tight)' }}>{KO.voice_done_title}</div>
+          <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)' }}>{KO.voice_done_sub}</div>
         </div>
         <Card padding={'8px 20px'}>
-          <ListRow title="오늘 적립액" right={<Amount value={today} size="md" />} />
+          <ListRow title={KO.home_today_earned} right={<Amount value={today} size="md" />} />
           <div style={{ height: 1, background: 'var(--divider)' }} />
-          <ListRow title="다음 참여일" right={<span style={{ font: 'var(--text-body1)', fontVariantNumeric: 'tabular-nums' }}>9월 7일 (월)</span>} />
+          <ListRow title={KO.voice_next_day} right={<span style={{ font: 'var(--text-body1)', fontVariantNumeric: 'tabular-nums' }}>9월 7일 (월)</span>} />
         </Card>
       </Body>
-      <CTA label="홈으로" onClick={onHome} />
+      <CTA label={KO.common_home} onClick={onHome} />
     </>
   );
 }
@@ -925,8 +962,9 @@ export function Prototype() {
   const [round, setRound] = React.useState(1);
   const go = (s) => setScreen(s);
   const doneCount = Object.values(done).filter(Boolean).length;
-  const today = doneCount * 250 + (voiceDone ? 500 : 0);
+  const today = doneCount * 250 + (voiceDone ? VOICE_REWARD : 0);
   const total = 3000 + today;
+  const nextT = parseInt(EMA[(round + 1) % EMA.length].time, 10);
 
   let content;
   switch (screen) {
@@ -940,10 +978,10 @@ export function Prototype() {
       onStartVoice={() => go('voiceReady')}
       onWithdraw={() => { setDone({ 0: true }); setVoiceDone(false); go('account'); }} />; break;
     case 'survey': content = <SurveyFlow onDone={() => { setDone((d) => ({ ...d, [round]: true })); go('surveyDone'); }} onExit={() => go('home')} />; break;
-    case 'surveyDone': content = <SurveyDone onHome={() => go('home')} today={today} total={total} />; break;
+    case 'surveyDone': content = <SurveyDone onHome={() => go('home')} today={today} total={total} n={doneCount} nextT={nextT} />; break;
     case 'voiceReady': content = <VoiceReady go={go} onBack={() => go('home')} />; break;
     case 'voiceRec': content = <VoiceRecording go={go} onBack={() => go('home')} />; break;
-    case 'voiceDone': content = <VoiceDone onHome={() => { setVoiceDone(true); go('home'); }} today={doneCount * 250 + 500} />; break;
+    case 'voiceDone': content = <VoiceDone onHome={() => { setVoiceDone(true); go('home'); }} today={doneCount * 250 + VOICE_REWARD} />; break;
     default: content = <ScrAccount go={go} />;
   }
 
