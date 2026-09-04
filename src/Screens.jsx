@@ -398,7 +398,7 @@ function ScrVoiceRecording() {
             </div>
           </ProgressRing>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, font: 'var(--text-caption)', color: 'var(--color-success)' }}>
-            <Icon name="check" size={14} color="var(--color-success)" />최소 시간을 채웠어요 — 지금 마쳐도 돼요
+            <Icon name="check" size={14} color="var(--color-success)" />최소 시간을 채웠어요 · 지금 마쳐도 돼요
           </div>
         </div>
       </Body>
@@ -531,7 +531,7 @@ export function AppScreens() {
   return (
     <div style={{ padding: '36px 40px 60px', display: 'flex', flexDirection: 'column', gap: 48, fontFamily: 'var(--font-sans)', color: 'var(--text-strong)', letterSpacing: 'var(--tracking-body)' }}>
       <div>
-        <div style={{ font: 'var(--text-display)', letterSpacing: 'var(--tracking-tight)' }}>위즈퍼링 참가자 앱 — 전체 화면</div>
+        <div style={{ font: 'var(--text-display)', letterSpacing: 'var(--tracking-tight)' }}>위즈퍼링 참가자 앱 · 전체 화면</div>
         <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)', marginTop: 4 }}>기능목록 FINAL v4 · 화면구성예시(7/22) 기준 · 홈 화면은 별도 카드(위즈퍼앱 홈) 참고</div>
       </div>
       <Section title="01 온보딩" sub="계정 생성 → 링 페어링 → 권한 → EMA 시간 설정 → 준비 완료">

@@ -225,11 +225,11 @@ function ContactDialog({ title, body, onClose }) {
         <div style={{ font: 'var(--text-title)', letterSpacing: 'var(--tracking-tight)' }}>{title}</div>
         <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)', whiteSpace: 'pre-line' }}>{body}</div>
         <Card padding={'6px 16px'} style={{ background: 'var(--surface-sunken)', marginTop: 10 }}>
-          <ListRow onClick={() => toast('전화 연결 — 02-2123-0000 (목업)')} left={<Icon name="phone" size={18} color="var(--color-primary)" />} title="전화 연결" subtitle="02-2123-0000 · 평일 09–18시" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+          <ListRow onClick={() => toast('전화 연결 · 02-2123-0000 (목업)')} left={<Icon name="phone" size={18} color="var(--color-primary)" />} title="전화 연결" subtitle="02-2123-0000 · 평일 09~18시" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
           <div style={{ height: 1, background: 'var(--divider)' }} />
           <ListRow onClick={() => toast('카카오 채널 열기 (목업)')} left={<Icon name="message-circle" size={18} color="var(--color-primary)" />} title="카카오톡 채널 문의" subtitle="위즈퍼링 연구팀" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
           <div style={{ height: 1, background: 'var(--divider)' }} />
-          <ListRow onClick={() => toast('메일 앱 열기 — wizperring@yonsei.ac.kr (목업)')} left={<Icon name="mail" size={18} color="var(--color-primary)" />} title="이메일 문의" subtitle="wizperring@yonsei.ac.kr" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+          <ListRow onClick={() => toast('메일 앱 열기 · wizperring@yonsei.ac.kr (목업)')} left={<Icon name="mail" size={18} color="var(--color-primary)" />} title="이메일 문의" subtitle="wizperring@yonsei.ac.kr" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
         </Card>
         <Button variant="ghost" size="lg" onClick={onClose} style={{ width: '100%', color: 'var(--text-sub)', marginTop: 4 }}>닫기</Button>
       </div>
@@ -636,7 +636,7 @@ function PermsPage() {
         <div style={{ height: 1, background: 'var(--divider)' }} />
         <PermRow icon="battery-charging" name="배터리 사용 제한 해제" desc="백그라운드 수집이 끊기지 않아요" ok={battery} onFix={() => { setBattery(true); toast('배터리 사용 제한을 해제했어요'); }} />
       </Card>
-      {!battery ? <div style={{ font: 'var(--text-micro)', color: 'var(--color-danger)', padding: '0 4px' }}>1개 항목이 꺼져 있어요 — 허용하면 수집이 안정적이에요</div> : <div style={{ font: 'var(--text-micro)', color: 'var(--color-success)', padding: '0 4px' }}>모든 권한이 허용됐어요</div>}
+      {!battery ? <div style={{ font: 'var(--text-micro)', color: 'var(--color-danger)', padding: '0 4px' }}>1개 항목이 꺼져 있어요 · 허용하면 수집이 안정적이에요</div> : <div style={{ font: 'var(--text-micro)', color: 'var(--color-success)', padding: '0 4px' }}>모든 권한이 허용됐어요</div>}
     </Body>
   );
 }
@@ -691,13 +691,13 @@ function SurveyTimePage() {
 function ContactPage() {
   return (
     <Body gap={12} pad="8px 20px 24px">
-      <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)' }}>연구 참여 중 궁금한 점이나 문제가 있으면 연락해 주세요. 평일 09–18시에 응답해요.</div>
+      <div style={{ font: 'var(--text-body2)', color: 'var(--text-sub)' }}>연구 참여 중 궁금한 점이나 문제가 있으면 연락해 주세요. 평일 09~18시에 응답해요.</div>
       <Card padding={'6px 20px'}>
-        <ListRow onClick={() => toast('전화 연결 — 02-2123-0000 (목업)')} left={<Icon name="phone" size={20} color="var(--color-primary)" />} title="전화 연결" subtitle="02-2123-0000" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+        <ListRow onClick={() => toast('전화 연결 · 02-2123-0000 (목업)')} left={<Icon name="phone" size={20} color="var(--color-primary)" />} title="전화 연결" subtitle="02-2123-0000" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
         <div style={{ height: 1, background: 'var(--divider)' }} />
         <ListRow onClick={() => toast('카카오 채널 열기 (목업)')} left={<Icon name="message-circle" size={20} color="var(--color-primary)" />} title="카카오톡 채널 문의" subtitle="위즈퍼링 연구팀" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
         <div style={{ height: 1, background: 'var(--divider)' }} />
-        <ListRow onClick={() => toast('메일 앱 열기 — wizperring@yonsei.ac.kr (목업)')} left={<Icon name="mail" size={20} color="var(--color-primary)" />} title="이메일 문의" subtitle="wizperring@yonsei.ac.kr" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
+        <ListRow onClick={() => toast('메일 앱 열기 · wizperring@yonsei.ac.kr (목업)')} left={<Icon name="mail" size={20} color="var(--color-primary)" />} title="이메일 문의" subtitle="wizperring@yonsei.ac.kr" right={<Icon name="chevron-right" size={18} color="var(--text-weak)" />} />
       </Card>
       <Card padding={'16px 20px'} style={{ background: 'var(--surface-sunken)' }}>
         <div style={{ font: 'var(--text-caption)', color: 'var(--text-sub)' }}>자주 묻는 질문</div>
@@ -886,7 +886,7 @@ function VoiceRecording({ go, onBack }) {
             </div>
           </ProgressRing>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, font: 'var(--text-caption)', color: enough ? 'var(--color-success)' : 'var(--text-weak)' }}>
-            <Icon name={enough ? 'check' : 'timer'} size={14} color={enough ? 'var(--color-success)' : 'var(--text-weak)'} />{enough ? '최소 시간을 채웠어요 — 지금 마쳐도 돼요' : `최소 ${20 - sec}초 더 이야기해 주세요`}
+            <Icon name={enough ? 'check' : 'timer'} size={14} color={enough ? 'var(--color-success)' : 'var(--text-weak)'} />{enough ? '최소 시간을 채웠어요 · 지금 마쳐도 돼요' : `최소 ${20 - sec}초 더 이야기해 주세요`}
           </div>
         </div>
       </Body>
@@ -958,7 +958,7 @@ export function Prototype() {
   );
 }
 
-/* 화면 점프 메뉴 — 모든 화면 직접 이동 (프로토타입 네비게이션) */
+/* 화면 점프 메뉴 · 모든 화면 직접 이동 (프로토타입 네비게이션) */
 const SCREEN_LIST = [
   ['온보딩', [['account', '1 · 계정 생성'], ['pairing', '2 · 링 페어링'], ['permissions', '3 · 권한 요청'], ['emaTime', '4 · EMA 시간 설정'], ['ready', '5 · 준비 완료']]],
   ['메인', [['home', '홈 · 누적보상 · 기기 · 설정']]],
