@@ -112,18 +112,45 @@ function Dialog({ title, body, primary, secondary, onPrimary, onSecondary }) {
 }
 
 /* ────────── 1. 온보딩 ────────── */
+function InputField({ label, value, onChange, placeholder, type = 'text', right, error, inputMode }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <span style={{ font: 'var(--text-label)', color: 'var(--text-sub)' }}>{label}</span>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} type={type} inputMode={inputMode}
+          style={{ flex: 1, height: 52, borderRadius: 14, background: 'var(--surface-card)', padding: '0 16px', font: 'var(--text-body1)', color: 'var(--text-strong)', border: 'none', outline: error ? '1.5px solid var(--color-danger)' : '1px solid var(--divider)', minWidth: 0 }} />
+        {right || null}
+      </div>
+      {error ? <span style={{ font: 'var(--text-caption)', color: 'var(--color-danger)' }}>{error}</span> : null}
+    </div>
+  );
+}
 function ScrAccount({ go }) {
+  const [email, setEmail] = React.useState('');
+  const [pw, setPw] = React.useState('');
+  const [phone, setPhone] = React.useState('');
+  const [birth, setBirth] = React.useState('');
   const [sex, setSex] = React.useState(0);
+  const [verified, setVerified] = React.useState(false);
+  const [touched, setTouched] = React.useState(false);
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const pwOk = pw.length >= 8;
+  const phoneOk = /^01\d-?\d{3,4}-?\d{4}$/.test(phone.replace(/\s/g, ''));
+  const birthOk = /^(19|20)\d{2}$/.test(birth) && +birth >= 1930 && +birth <= 2012;
+  const allOk = emailOk && pwOk && verified && birthOk;
+  const err = (cond, msg) => (touched && !cond ? msg : null);
   return (
     <>
       <StatusBar /><Dot n={0} total={4} />
       <Body gap={14}>
         <Title main={'연구 참여를 위해\n계정을 만들어 주세요'} />
-        <Field label="이메일" value="minji.k@example.com" />
-        <Field label="비밀번호" value="••••••••••" />
-        <Field label="휴대폰 번호" value="010-4821-7735" right={<Button variant="secondary" style={{ height: 52, flexShrink: 0 }}>인증됨</Button>} />
+        <InputField label="이메일" value={email} onChange={setEmail} placeholder="you@example.com" type="email" error={err(emailOk, '올바른 이메일을 입력해 주세요')} />
+        <InputField label="비밀번호" value={pw} onChange={setPw} placeholder="8자 이상" type="password" error={err(pwOk, '비밀번호는 8자 이상이에요')} />
+        <InputField label="휴대폰 번호" value={phone} onChange={(v) => { setPhone(v); setVerified(false); }} placeholder="010-0000-0000" type="tel" inputMode="tel"
+          error={err(verified, phoneOk ? '인증을 완료해 주세요' : '올바른 번호를 입력해 주세요')}
+          right={<Button variant={verified ? 'secondary' : 'primary'} disabled={!phoneOk || verified} onClick={() => { setVerified(true); toast('인증번호 확인 완료'); }} style={{ height: 52, flexShrink: 0 }}>{verified ? '인증됨' : '인증'}</Button>} />
         <div style={{ display: 'flex', gap: 12 }}>
-          <div style={{ flex: 1 }}><Field label="출생연도" value="2002" /></div>
+          <div style={{ flex: 1 }}><InputField label="출생연도" value={birth} onChange={setBirth} placeholder="예: 2002" inputMode="numeric" error={err(birthOk, '연도 4자리')} /></div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span style={{ font: 'var(--text-label)', color: 'var(--text-sub)' }}>성별</span>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -134,7 +161,7 @@ function ScrAccount({ go }) {
           </div>
         </div>
       </Body>
-      <CTA label="다음" onClick={() => go('pairing')} />
+      <CTA label="다음" onClick={() => { if (allOk) go('pairing'); else { setTouched(true); toast('입력 정보를 확인해 주세요'); } }} sub={allOk ? null : '모든 항목을 올바르게 입력하면 진행할 수 있어요'} />
     </>
   );
 }
